@@ -167,15 +167,15 @@ run_compliance_check() {
             # 下载并解压SCAP内容文件
             echo "下载SCAP内容文件..."
             if command -v wget &> /dev/null; then
-                wget -O /tmp/scap-security-guide.zip https://github.com/ComplianceAsCode/content/releases/download/v0.1.68/scap-security-guide-0.1.68.zip
+                wget -O /tmp/scap-security-guide.zip https://github.com/ComplianceAsCode/content/releases/download/v0.1.70/scap-security-guide-0.1.70.zip
             elif command -v curl &> /dev/null; then
-                curl -o /tmp/scap-security-guide.zip https://github.com/ComplianceAsCode/content/releases/download/v0.1.68/scap-security-guide-0.1.68.zip
+                curl -o /tmp/scap-security-guide.zip https://github.com/ComplianceAsCode/content/releases/download/v0.1.70/scap-security-guide-0.1.70.zip
             else
                 echo "错误: 没有找到wget或curl，无法自动下载"
                 echo "请手动下载SCAP内容文件："
-                echo "  wget https://github.com/ComplianceAsCode/content/releases/download/v0.1.68/scap-security-guide-0.1.68.zip"
-                echo "  unzip scap-security-guide-0.1.68.zip"
-                echo "  cp scap-security-guide-0.1.68/content/ssg-ubuntu2404-ds.xml /usr/share/xml/scap/ssg/content/"
+                echo "  wget https://github.com/ComplianceAsCode/content/releases/download/v0.1.70/scap-security-guide-0.1.70.zip"
+                echo "  unzip scap-security-guide-0.1.70.zip"
+                echo "  cp scap-security-guide-0.1.70/content/ssg-ubuntu2404-ds.xml /usr/share/xml/scap/ssg/content/"
                 exit 1
             fi
             
