@@ -311,12 +311,12 @@ generate_summary() {
     echo ""
     
     # 统计通过、失败、错误的规则数量
-    local pass_count=$(grep -c 'result="pass"' "$results_file" 2>/dev/null || echo "0")
-    local fail_count=$(grep -c 'result="fail"' "$results_file" 2>/dev/null || echo "0")
-    local error_count=$(grep -c 'result="error"' "$results_file" 2>/dev/null || echo "0")
-    local unknown_count=$(grep -c 'result="unknown"' "$results_file" 2>/dev/null || echo "0")
-    local notchecked_count=$(grep -c 'result="notchecked"' "$results_file" 2>/dev/null || echo "0")
-    local notapplicable_count=$(grep -c 'result="notapplicable"' "$results_file" 2>/dev/null || echo "0")
+    pass_count=$(grep -c 'result="pass"' "$results_file" 2>/dev/null || echo "0")
+    fail_count=$(grep -c 'result="fail"' "$results_file" 2>/dev/null || echo "0")
+    error_count=$(grep -c 'result="error"' "$results_file" 2>/dev/null || echo "0")
+    unknown_count=$(grep -c 'result="unknown"' "$results_file" 2>/dev/null || echo "0")
+    notchecked_count=$(grep -c 'result="notchecked"' "$results_file" 2>/dev/null || echo "0")
+    notapplicable_count=$(grep -c 'result="notapplicable"' "$results_file" 2>/dev/null || echo "0")
     
     echo "检查结果统计:"
     echo "  通过 (Pass):           $pass_count"
@@ -328,19 +328,29 @@ generate_summary() {
     echo ""
     
     # 计算合规率
-    local total_checked=$((pass_count + fail_count + error_count))
-    if [ $total_checked -gt 0 ]; then
-        local compliance_rate=$((pass_count * 100 / total_checked))
+    total_checked=$((pass_count + fail_count + error_count))
+    if [ "$total_checked" -gt 0 ]; then
+        compliance_rate=$((pass_count * 100 / total_checked))
         echo "合规率: $compliance_rate%"
         echo ""
         
-        if [ $compliance_rate -ge 90 ]; then
+        if [ "$compliance_rate" -ge 90 ]; then
             echo "✓ 系统合规性良好"
-        elif [ $compliance_rate -ge 70 ]; then
+        elif [ "$compliance_rate" -ge 70 ]; then
             echo "⚠ 系统合规性一般，建议改进"
         else
             echo "✗ 系统合规性较差，需要加固"
         fi
+    else
+        echo "警告: 没有可检查的规则（所有规则都标记为'不适用'）"
+        echo "这可能是因为："
+        echo "  1. 选择了错误的服务器/工作站配置文件"
+        echo "  2. 系统环境不符合CIS基准要求"
+        echo "  3. SCAP内容文件版本与系统不匹配"
+        echo ""
+        echo "建议："
+        echo "  - 检查是否选择了正确的配置文件（Server/Workstation）"
+        echo "  - 查看详细报告了解具体原因: $REPORT_DIR/report.html"
     fi
     
     echo ""
