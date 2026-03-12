@@ -311,12 +311,20 @@ generate_summary() {
     echo ""
     
     # 统计通过、失败、错误的规则数量
-    pass_count=$(grep -c 'result="pass"' "$results_file" 2>/dev/null || echo "0")
-    fail_count=$(grep -c 'result="fail"' "$results_file" 2>/dev/null || echo "0")
-    error_count=$(grep -c 'result="error"' "$results_file" 2>/dev/null || echo "0")
-    unknown_count=$(grep -c 'result="unknown"' "$results_file" 2>/dev/null || echo "0")
-    notchecked_count=$(grep -c 'result="notchecked"' "$results_file" 2>/dev/null || echo "0")
-    notapplicable_count=$(grep -c 'result="notapplicable"' "$results_file" 2>/dev/null || echo "0")
+    pass_count=$(grep -c 'result="pass"' "$results_file" 2>/dev/null | sed 's/[^0-9]//g')
+    fail_count=$(grep -c 'result="fail"' "$results_file" 2>/dev/null | sed 's/[^0-9]//g')
+    error_count=$(grep -c 'result="error"' "$results_file" 2>/dev/null | sed 's/[^0-9]//g')
+    unknown_count=$(grep -c 'result="unknown"' "$results_file" 2>/dev/null | sed 's/[^0-9]//g')
+    notchecked_count=$(grep -c 'result="notchecked"' "$results_file" 2>/dev/null | sed 's/[^0-9]//g')
+    notapplicable_count=$(grep -c 'result="notapplicable"' "$results_file" 2>/dev/null | sed 's/[^0-9]//g')
+    
+    # 确保所有变量都是数字
+    pass_count=${pass_count:-0}
+    fail_count=${fail_count:-0}
+    error_count=${error_count:-0}
+    unknown_count=${unknown_count:-0}
+    notchecked_count=${notchecked_count:-0}
+    notapplicable_count=${notapplicable_count:-0}
     
     echo "检查结果统计:"
     echo "  通过 (Pass):           $pass_count"
