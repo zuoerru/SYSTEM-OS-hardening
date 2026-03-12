@@ -311,14 +311,11 @@ freq = 50
 max_log_file = 8
 num_logs = 5
 priority_boost = 4
-disp_qos = lossy
-dispatcher = /usr/sbin/audispd
 name_format = NONE
 max_log_file_action = ROTATE
 space_left = 75
 space_left_action = SYSLOG
 action_mail_acct = root
-examine_watchdirs = no
 EOF
     systemctl enable --now auditd
     
