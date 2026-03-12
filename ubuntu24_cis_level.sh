@@ -64,7 +64,6 @@ install_packages() {
         logrotate \
         debsums \
         aptitude \
-        chrony \
         systemd-timesyncd
     
     # Level 2额外安装的包
