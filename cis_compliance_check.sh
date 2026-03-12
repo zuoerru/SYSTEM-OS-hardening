@@ -30,6 +30,10 @@ detect_os() {
             echo "检测到系统: CentOS 9"
             OS_TYPE="rhel9"
             return 0
+        elif [[ "$NAME" == *"AlmaLinux"* && "$VERSION_ID" == "9"* ]]; then
+            echo "检测到系统: AlmaLinux 9"
+            OS_TYPE="rhel9"
+            return 0
         else
             echo "警告: 未完全支持的系统 - $NAME $VERSION_ID"
             echo "将尝试通用检查..."
