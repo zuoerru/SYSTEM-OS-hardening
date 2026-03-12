@@ -16,7 +16,7 @@ echo ""
 # 选择加固级别
 read -p "请选择加固级别 (1/2): " LEVEL
 
-if [[ "$LEVEL" != "1" && "$LEVEL" != "2" ]]; then
+if [ "$LEVEL" != "1" ] && [ "$LEVEL" != "2" ]; then
     echo "错误: 请输入有效的级别 (1/2)"
     exit 1
 fi
@@ -29,7 +29,7 @@ echo "================================"
 detect_os() {
     if [ -f /etc/os-release ]; then
         . /etc/os-release
-        if [[ "$NAME" == "Ubuntu" && "$VERSION_ID" == "24.04" ]]; then
+        if [ "$NAME" = "Ubuntu" ] && [ "$VERSION_ID" = "24.04" ]; then
             echo "检测到Ubuntu 24.04系统"
             return 0
         else
@@ -68,7 +68,7 @@ install_packages() {
         systemd-timesyncd
     
     # Level 2额外安装的包
-    if [ "$LEVEL" == "2" ]; then
+    if [ "$LEVEL" = "2" ]; then
         echo "安装Level 2额外的包..."
         apt-get install -y \
             rkhunter \
@@ -97,7 +97,7 @@ EOF
     chmod go-rwx /etc/modprobe.d/CIS.conf
     
     # Level 2额外禁用的文件系统
-    if [ "$LEVEL" == "2" ]; then
+    if [ "$LEVEL" = "2" ]; then
         echo "1.1.1 Level 2: 禁用额外的文件系统..."
         cat >> /etc/modprobe.d/CIS.conf << 'EOF'
 # Level 2: 禁用额外的文件系统
@@ -151,7 +151,7 @@ EOF
     mount -o remount,nosuid,nodev,noexec /dev/shm 2>/dev/null || true
     
     # Level 2额外的文件系统安全措施
-    if [ "$LEVEL" == "2" ]; then
+    if [ "$LEVEL" = "2" ]; then
         echo "1.2.2 Level 2: 确保/var/log配置正确..."
         if ! grep -q "^/var/log" /etc/fstab; then
             echo "/var/log /var/log ext4 defaults,nosuid,nodev,noexec 0 0" >> /etc/fstab
@@ -170,23 +170,44 @@ section_2() {
     
     # 2.1 禁用不必要的服务
     echo "2.1 禁用不必要的服务..."
-    services_to_disable=("avahi-daemon" "bluetooth" "cups" "isc-dhcp-server" "nfs-common" "rpcbind" "samba" "winbind")
+    
+    # 禁用基本服务
+    systemctl disable --now avahi-daemon 2>/dev/null || true
+    systemctl disable --now bluetooth 2>/dev/null || true
+    systemctl disable --now cups 2>/dev/null || true
+    systemctl disable --now isc-dhcp-server 2>/dev/null || true
+    systemctl disable --now nfs-common 2>/dev/null || true
+    systemctl disable --now rpcbind 2>/dev/null || true
+    systemctl disable --now samba 2>/dev/null || true
+    systemctl disable --now winbind 2>/dev/null || true
     
     # Level 2额外禁用的服务
-    if [ "$LEVEL" == "2" ]; then
-        services_to_disable+=("apache2" "nginx" "mysql" "postgresql" "bind9" "exim4" "sendmail" "vsftpd" "ssmtp" "telnetd" "rsh-server" "talk" "ntalk" "xinetd" "inetd")
+    if [ "$LEVEL" = "2" ]; then
+        systemctl disable --now apache2 2>/dev/null || true
+        systemctl disable --now nginx 2>/dev/null || true
+        systemctl disable --now mysql 2>/dev/null || true
+        systemctl disable --now postgresql 2>/dev/null || true
+        systemctl disable --now bind9 2>/dev/null || true
+        systemctl disable --now exim4 2>/dev/null || true
+        systemctl disable --now sendmail 2>/dev/null || true
+        systemctl disable --now vsftpd 2>/dev/null || true
+        systemctl disable --now ssmtp 2>/dev/null || true
+        systemctl disable --now telnetd 2>/dev/null || true
+        systemctl disable --now rsh-server 2>/dev/null || true
+        systemctl disable --now talk 2>/dev/null || true
+        systemctl disable --now ntalk 2>/dev/null || true
+        systemctl disable --now xinetd 2>/dev/null || true
+        systemctl disable --now inetd 2>/dev/null || true
     fi
-    
-    for service in "${services_to_disable[@]}"; do
-        systemctl disable --now "$service" 2>/dev/null || true
-    done
     
     # 2.2 确保关键服务启用
     echo "2.2 确保关键服务启用..."
-    services_to_enable=("auditd" "cron" "ssh" "ufw" "fail2ban" "systemd-timesyncd")
-    for service in "${services_to_enable[@]}"; do
-        systemctl enable --now "$service" 2>/dev/null || true
-    done
+    systemctl enable --now auditd 2>/dev/null || true
+    systemctl enable --now cron 2>/dev/null || true
+    systemctl enable --now ssh 2>/dev/null || true
+    systemctl enable --now ufw 2>/dev/null || true
+    systemctl enable --now fail2ban 2>/dev/null || true
+    systemctl enable --now systemd-timesyncd 2>/dev/null || true
     
     # 2.3 配置时间同步
     echo "2.3 配置时间同步..."
@@ -249,7 +270,7 @@ net.ipv4.icmp_ignore_bogus_error_responses = 1
 EOF
     
     # Level 2额外的网络安全参数
-    if [ "$LEVEL" == "2" ]; then
+    if [ "$LEVEL" = "2" ]; then
         cat >> /etc/sysctl.d/99-cis.conf << 'EOF'
 # Level 2: 额外的网络安全参数
 net.ipv6.conf.all.accept_ra = 0
@@ -266,7 +287,7 @@ EOF
     sysctl -p /etc/sysctl.d/99-cis.conf
     
     # 3.3 禁用IPv6（Level 2）
-    if [ "$LEVEL" == "2" ]; then
+    if [ "$LEVEL" = "2" ]; then
         echo "3.3 Level 2: 禁用IPv6..."
         echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.d/99-cis.conf
         echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.d/99-cis.conf
@@ -325,7 +346,7 @@ EOF
 EOF
     
     # Level 2额外的审计规则
-    if [ "$LEVEL" == "2" ]; then
+    if [ "$LEVEL" = "2" ]; then
         cat >> /etc/audit/rules.d/audit.rules << 'EOF'
 # Level 2: 额外的审计规则
 # 网络配置
@@ -509,7 +530,7 @@ EOF
     systemctl restart sshd
     
     # Level 2额外的访问控制
-    if [ "$LEVEL" == "2" ]; then
+    if [ "$LEVEL" = "2" ]; then
         echo "5.5 Level 2: 配置账户锁定..."
         cat > /etc/security/faillock.conf << 'EOF'
 # 账户锁定配置
@@ -553,7 +574,7 @@ EOF
     debsums -c || true
     
     # Level 2额外的系统维护
-    if [ "$LEVEL" == "2" ]; then
+    if [ "$LEVEL" = "2" ]; then
         echo "6.3 Level 2: 运行rootkit检测..."
         rkhunter --check --skip-keypress || true
         chkrootkit || true
@@ -586,7 +607,7 @@ EOF
     systemctl restart fail2ban
     
     # Level 2额外的安全措施
-    if [ "$LEVEL" == "2" ]; then
+    if [ "$LEVEL" = "2" ]; then
         echo "7.2 Level 2: 禁用不必要的SUID/SGID程序..."
         suid_sgid_files=("/usr/bin/chfn" "/usr/bin/chsh" "/usr/bin/newgrp" "/usr/bin/passwd" "/usr/bin/su" "/usr/bin/sudo" "/usr/bin/mount" "/usr/bin/umount" "/usr/bin/ping" "/usr/bin/fusermount" "/usr/bin/screen" "/usr/bin/wall" "/usr/bin/write")
         for file in "${suid_sgid_files[@]}"; do
