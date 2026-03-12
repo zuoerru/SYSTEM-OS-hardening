@@ -59,7 +59,7 @@ install_openscap() {
     case "$OS_TYPE" in
         "ubuntu2404")
             apt-get update
-            apt-get install -y libopenscap8 scap-security-guide
+            apt-get install -y libopenscap25 openscap-scanner
             ;;
         "rhel9")
             dnf install -y openscap-scanner scap-security-guide
@@ -155,7 +155,17 @@ run_compliance_check() {
     
     if [ -z "$SCAP_CONTENT" ] || [ ! -f "$SCAP_CONTENT" ]; then
         echo "错误: 找不到SCAP内容文件"
-        echo "请确保scap-security-guide包已正确安装"
+        echo ""
+        if [ "$OS_TYPE" == "ubuntu2404" ]; then
+            echo "在Ubuntu 24.04上，scap-security-guide包可能不可用"
+            echo "请尝试手动下载SCAP内容文件："
+            echo "  wget https://github.com/ComplianceAsCode/content/releases/download/v0.1.68/scap-security-guide-0.1.68.zip"
+            echo "  unzip scap-security-guide-0.1.68.zip"
+            echo "  cp scap-security-guide-0.1.68/content/ssg-ubuntu2404-ds.xml /usr/share/xml/scap/ssg/content/"
+        else
+            echo "请确保scap-security-guide包已正确安装"
+        fi
+        echo ""
         exit 1
     fi
     
