@@ -189,14 +189,26 @@ run_compliance_check() {
                 exit 1
             fi
             
-            # 复制文件
-            echo "复制SCAP内容文件到目标目录..."
-            cp /tmp/scap-security-guide-0.1.68/content/ssg-ubuntu2404-ds.xml /usr/share/xml/scap/ssg/content/ 2>/dev/null || \
-            cp /tmp/scap-security-guide-0.1.68/content/ssg-ubuntu2204-ds.xml /usr/share/xml/scap/ssg/content/ 2>/dev/null || \
-            {
+            # 查找并复制文件
+            echo "查找SCAP内容文件..."
+            SCAP_FILE=$(find /tmp -name "ssg-ubuntu2404-ds.xml" 2>/dev/null | head -1)
+            if [ -z "$SCAP_FILE" ]; then
+                SCAP_FILE=$(find /tmp -name "ssg-ubuntu2204-ds.xml" 2>/dev/null | head -1)
+            fi
+            if [ -z "$SCAP_FILE" ]; then
+                SCAP_FILE=$(find /tmp -name "ssg-ubuntu*.xml" 2>/dev/null | head -1)
+            fi
+            
+            if [ -n "$SCAP_FILE" ]; then
+                echo "找到SCAP内容文件: $SCAP_FILE"
+                echo "复制到目标目录..."
+                cp "$SCAP_FILE" /usr/share/xml/scap/ssg/content/
+            else
                 echo "错误: 无法找到适合的SCAP内容文件"
+                echo "解压后的文件列表:"
+                find /tmp -name "*.xml" 2>/dev/null | head -20
                 exit 1
-            }
+            fi
             
             # 重新获取SCAP内容路径
             SCAP_CONTENT=$(get_scap_content_path)
