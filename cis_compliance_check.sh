@@ -156,17 +156,60 @@ run_compliance_check() {
     if [ -z "$SCAP_CONTENT" ] || [ ! -f "$SCAP_CONTENT" ]; then
         echo "错误: 找不到SCAP内容文件"
         echo ""
+        
         if [ "$OS_TYPE" == "ubuntu2404" ]; then
             echo "在Ubuntu 24.04上，scap-security-guide包可能不可用"
-            echo "请尝试手动下载SCAP内容文件："
-            echo "  wget https://github.com/ComplianceAsCode/content/releases/download/v0.1.68/scap-security-guide-0.1.68.zip"
-            echo "  unzip scap-security-guide-0.1.68.zip"
-            echo "  cp scap-security-guide-0.1.68/content/ssg-ubuntu2404-ds.xml /usr/share/xml/scap/ssg/content/"
+            echo "尝试自动下载SCAP内容文件..."
+            
+            # 确保目录存在
+            mkdir -p /usr/share/xml/scap/ssg/content/
+            
+            # 下载并解压SCAP内容文件
+            echo "下载SCAP内容文件..."
+            if command -v wget &> /dev/null; then
+                wget -O /tmp/scap-security-guide.zip https://github.com/ComplianceAsCode/content/releases/download/v0.1.68/scap-security-guide-0.1.68.zip
+            elif command -v curl &> /dev/null; then
+                curl -o /tmp/scap-security-guide.zip https://github.com/ComplianceAsCode/content/releases/download/v0.1.68/scap-security-guide-0.1.68.zip
+            else
+                echo "错误: 没有找到wget或curl，无法自动下载"
+                echo "请手动下载SCAP内容文件："
+                echo "  wget https://github.com/ComplianceAsCode/content/releases/download/v0.1.68/scap-security-guide-0.1.68.zip"
+                echo "  unzip scap-security-guide-0.1.68.zip"
+                echo "  cp scap-security-guide-0.1.68/content/ssg-ubuntu2404-ds.xml /usr/share/xml/scap/ssg/content/"
+                exit 1
+            fi
+            
+            # 解压文件
+            echo "解压SCAP内容文件..."
+            if command -v unzip &> /dev/null; then
+                unzip -o /tmp/scap-security-guide.zip -d /tmp/
+            else
+                echo "错误: 没有找到unzip，无法自动解压"
+                echo "请手动解压并复制文件"
+                exit 1
+            fi
+            
+            # 复制文件
+            echo "复制SCAP内容文件到目标目录..."
+            cp /tmp/scap-security-guide-0.1.68/content/ssg-ubuntu2404-ds.xml /usr/share/xml/scap/ssg/content/ 2>/dev/null || \
+            cp /tmp/scap-security-guide-0.1.68/content/ssg-ubuntu2204-ds.xml /usr/share/xml/scap/ssg/content/ 2>/dev/null || \
+            {
+                echo "错误: 无法找到适合的SCAP内容文件"
+                exit 1
+            }
+            
+            # 重新获取SCAP内容路径
+            SCAP_CONTENT=$(get_scap_content_path)
+            if [ -z "$SCAP_CONTENT" ] || [ ! -f "$SCAP_CONTENT" ]; then
+                echo "错误: 下载后仍然找不到SCAP内容文件"
+                exit 1
+            fi
+            
+            echo "SCAP内容文件下载成功！"
         else
             echo "请确保scap-security-guide包已正确安装"
+            exit 1
         fi
-        echo ""
-        exit 1
     fi
     
     echo "SCAP内容文件: $SCAP_CONTENT"
