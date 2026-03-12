@@ -617,14 +617,12 @@ EOF
         
         echo "7.4 Level 2: 配置GRUB密码..."
         grub_password=$(openssl passwd -6 "grub_password")
-        cat > /etc/grub.d/40_custom << EOF
-#!/bin/sh
-set -e
-cat << 'EOF'
-set superusers="root"
-password_pbkdf2 root $grub_password
-EOF
-EOF
+        echo "#!/bin/sh" > /etc/grub.d/40_custom
+        echo "set -e" >> /etc/grub.d/40_custom
+        echo "cat << 'EOF'" >> /etc/grub.d/40_custom
+        echo "set superusers=\"root\"" >> /etc/grub.d/40_custom
+        echo "password_pbkdf2 root $grub_password" >> /etc/grub.d/40_custom
+        echo "EOF" >> /etc/grub.d/40_custom
         update-grub
     fi
 }
