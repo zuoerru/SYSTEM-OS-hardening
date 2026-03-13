@@ -58,14 +58,12 @@ install_packages() {
         systemd-timesyncd
     
     # Level 2额外安装的包
-    if [ "$LEVEL" = "2" ]; then
-        echo "安装Level 2额外的包..."
-        apt-get install -y \
-            rkhunter \
-            chkrootkit \
-            libpam-tmpdir \
-            aide
-    fi
+    echo "安装Level 2额外的包..."
+    apt-get install -y \
+        rkhunter \
+        chkrootkit \
+        libpam-tmpdir \
+        aide
 }
 
 # 1. 文件系统安全
@@ -87,9 +85,8 @@ EOF
     chmod go-rwx /etc/modprobe.d/CIS.conf
     
     # Level 2额外禁用的文件系统
-    if [ "$LEVEL" = "2" ]; then
-        echo "1.1.1 Level 2: 禁用额外的文件系统..."
-        cat >> /etc/modprobe.d/CIS.conf << 'EOF'
+    echo "1.1.1 Level 2: 禁用额外的文件系统..."
+    cat >> /etc/modprobe.d/CIS.conf << 'EOF'
 # Level 2: 禁用额外的文件系统
 install vfat /bin/true
 install usb-storage /bin/true
@@ -98,7 +95,6 @@ install ieee1394 /bin/true
 install rds /bin/true
 install tipc /bin/true
 EOF
-    fi
     
     # 1.1.2 确保文件系统权限正确
     echo "1.1.2 确保文件系统权限正确..."
@@ -141,17 +137,15 @@ EOF
     mount -o remount,nosuid,nodev,noexec /dev/shm 2>/dev/null || true
     
     # Level 2额外的文件系统安全措施
-    if [ "$LEVEL" = "2" ]; then
-        echo "1.2.2 Level 2: 确保/var/log配置正确..."
-        if ! grep -q "^/var/log" /etc/fstab; then
-            echo "/var/log /var/log ext4 defaults,nosuid,nodev,noexec 0 0" >> /etc/fstab
-        fi
-        
-        echo "1.3.1 Level 2: 配置AIDE文件完整性检查..."
-        apt-get install -y aide
-        aideinit
-        cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+    echo "1.2.2 Level 2: 确保/var/log配置正确..."
+    if ! grep -q "^/var/log" /etc/fstab; then
+        echo "/var/log /var/log ext4 defaults,nosuid,nodev,noexec 0 0" >> /etc/fstab
     fi
+    
+    echo "1.3.1 Level 2: 配置AIDE文件完整性检查..."
+    apt-get install -y aide
+    aideinit
+    cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 }
 
 # 2. 系统服务
@@ -172,23 +166,21 @@ section_2() {
     systemctl disable --now winbind 2>/dev/null || true
     
     # Level 2额外禁用的服务
-    if [ "$LEVEL" = "2" ]; then
-        systemctl disable --now apache2 2>/dev/null || true
-        systemctl disable --now nginx 2>/dev/null || true
-        systemctl disable --now mysql 2>/dev/null || true
-        systemctl disable --now postgresql 2>/dev/null || true
-        systemctl disable --now bind9 2>/dev/null || true
-        systemctl disable --now exim4 2>/dev/null || true
-        systemctl disable --now sendmail 2>/dev/null || true
-        systemctl disable --now vsftpd 2>/dev/null || true
-        systemctl disable --now ssmtp 2>/dev/null || true
-        systemctl disable --now telnetd 2>/dev/null || true
-        systemctl disable --now rsh-server 2>/dev/null || true
-        systemctl disable --now talk 2>/dev/null || true
-        systemctl disable --now ntalk 2>/dev/null || true
-        systemctl disable --now xinetd 2>/dev/null || true
-        systemctl disable --now inetd 2>/dev/null || true
-    fi
+    systemctl disable --now apache2 2>/dev/null || true
+    systemctl disable --now nginx 2>/dev/null || true
+    systemctl disable --now mysql 2>/dev/null || true
+    systemctl disable --now postgresql 2>/dev/null || true
+    systemctl disable --now bind9 2>/dev/null || true
+    systemctl disable --now exim4 2>/dev/null || true
+    systemctl disable --now sendmail 2>/dev/null || true
+    systemctl disable --now vsftpd 2>/dev/null || true
+    systemctl disable --now ssmtp 2>/dev/null || true
+    systemctl disable --now telnetd 2>/dev/null || true
+    systemctl disable --now rsh-server 2>/dev/null || true
+    systemctl disable --now talk 2>/dev/null || true
+    systemctl disable --now ntalk 2>/dev/null || true
+    systemctl disable --now xinetd 2>/dev/null || true
+    systemctl disable --now inetd 2>/dev/null || true
     
     # 2.2 确保关键服务启用
     echo "2.2 确保关键服务启用..."
@@ -260,8 +252,7 @@ net.ipv4.icmp_ignore_bogus_error_responses = 1
 EOF
     
     # Level 2额外的网络安全参数
-    if [ "$LEVEL" = "2" ]; then
-        cat >> /etc/sysctl.d/99-cis.conf << 'EOF'
+    cat >> /etc/sysctl.d/99-cis.conf << 'EOF'
 # Level 2: 额外的网络安全参数
 net.ipv6.conf.all.accept_ra = 0
 net.ipv6.conf.default.accept_ra = 0
@@ -272,17 +263,14 @@ net.ipv4.conf.default.arp_ignore = 1
 net.ipv4.conf.all.arp_announce = 2
 net.ipv4.conf.default.arp_announce = 2
 EOF
-    fi
     
     sysctl -p /etc/sysctl.d/99-cis.conf
     
     # 3.3 禁用IPv6（Level 2）
-    if [ "$LEVEL" = "2" ]; then
-        echo "3.3 Level 2: 禁用IPv6..."
-        echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.d/99-cis.conf
-        echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.d/99-cis.conf
-        sysctl -p /etc/sysctl.d/99-cis.conf
-    fi
+    echo "3.3 Level 2: 禁用IPv6..."
+    echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.d/99-cis.conf
+    echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.d/99-cis.conf
+    sysctl -p /etc/sysctl.d/99-cis.conf
 }
 
 # 4. 日志和审计
@@ -333,8 +321,7 @@ EOF
 EOF
     
     # Level 2额外的审计规则
-    if [ "$LEVEL" = "2" ]; then
-        cat >> /etc/audit/rules.d/audit.rules << 'EOF'
+    cat >> /etc/audit/rules.d/audit.rules << 'EOF'
 # Level 2: 额外的审计规则
 # 网络配置
 -w /etc/network/ -p wa -k network
@@ -374,7 +361,6 @@ EOF
 -w /etc/security/limits.conf -p wa -k limits
 -w /etc/security/limits.d/ -p wa -k limits
 EOF
-    fi
     
     systemctl restart auditd
     
@@ -517,9 +503,8 @@ EOF
     systemctl restart sshd
     
     # Level 2额外的访问控制
-    if [ "$LEVEL" = "2" ]; then
-        echo "5.5 Level 2: 配置账户锁定..."
-        cat > /etc/security/faillock.conf << 'EOF'
+    echo "5.5 Level 2: 配置账户锁定..."
+    cat > /etc/security/faillock.conf << 'EOF'
 # 账户锁定配置
 dir = /var/run/faillock
 enable = yes
@@ -528,9 +513,9 @@ deny = 5
 unlock_time = 900
 admin_flag = unlock_on_root
 EOF
-        
-        echo "5.6 Level 2: 配置系统限制..."
-        cat > /etc/security/limits.d/99-cis-limits.conf << 'EOF'
+    
+    echo "5.6 Level 2: 配置系统限制..."
+    cat > /etc/security/limits.d/99-cis-limits.conf << 'EOF'
 # CIS系统限制
 * soft nofile 1024
 * hard nofile 4096
@@ -539,7 +524,6 @@ EOF
 * soft core 0
 * hard core 0
 EOF
-    fi
 }
 
 # 6. 系统维护
@@ -561,14 +545,12 @@ EOF
     debsums -c || true
     
     # Level 2额外的系统维护
-    if [ "$LEVEL" = "2" ]; then
-        echo "6.3 Level 2: 运行rootkit检测..."
-        rkhunter --check --skip-keypress || true
-        chkrootkit || true
-        
-        echo "6.4 Level 2: 清理临时文件..."
-        rm -rf /tmp/* /var/tmp/*
-    fi
+    echo "6.3 Level 2: 运行rootkit检测..."
+    rkhunter --check --skip-keypress || true
+    chkrootkit || true
+    
+    echo "6.4 Level 2: 清理临时文件..."
+    rm -rf /tmp/* /var/tmp/*
 }
 
 # 7. 额外安全措施
@@ -594,28 +576,26 @@ EOF
     systemctl restart fail2ban
     
     # Level 2额外的安全措施
-    if [ "$LEVEL" = "2" ]; then
-        echo "7.2 Level 2: 禁用不必要的SUID/SGID程序..."
-        suid_sgid_files=("/usr/bin/chfn" "/usr/bin/chsh" "/usr/bin/newgrp" "/usr/bin/passwd" "/usr/bin/su" "/usr/bin/sudo" "/usr/bin/mount" "/usr/bin/umount" "/usr/bin/ping" "/usr/bin/fusermount" "/usr/bin/screen" "/usr/bin/wall" "/usr/bin/write")
-        for file in "${suid_sgid_files[@]}"; do
-            if [ -f "$file" ]; then
-                chmod u-s "$file" 2>/dev/null || true
-            fi
-        done
-        
-        echo "7.3 Level 2: 禁用Ctrl-Alt-Delete..."
-        systemctl mask ctrl-alt-delete.target
-        
-        echo "7.4 Level 2: 配置GRUB密码..."
-        grub_password=$(openssl passwd -6 "grub_password")
-        echo "#!/bin/sh" > /etc/grub.d/40_custom
-        echo "set -e" >> /etc/grub.d/40_custom
-        echo "cat << 'EOF'" >> /etc/grub.d/40_custom
-        echo "set superusers=\"root\"" >> /etc/grub.d/40_custom
-        echo "password_pbkdf2 root $grub_password" >> /etc/grub.d/40_custom
-        echo "EOF" >> /etc/grub.d/40_custom
-        update-grub
-    fi
+    echo "7.2 Level 2: 禁用不必要的SUID/SGID程序..."
+    suid_sgid_files=("/usr/bin/chfn" "/usr/bin/chsh" "/usr/bin/newgrp" "/usr/bin/passwd" "/usr/bin/su" "/usr/bin/sudo" "/usr/bin/mount" "/usr/bin/umount" "/usr/bin/ping" "/usr/bin/fusermount" "/usr/bin/screen" "/usr/bin/wall" "/usr/bin/write")
+    for file in "${suid_sgid_files[@]}"; do
+        if [ -f "$file" ]; then
+            chmod u-s "$file" 2>/dev/null || true
+        fi
+    done
+    
+    echo "7.3 Level 2: 禁用Ctrl-Alt-Delete..."
+    systemctl mask ctrl-alt-delete.target
+    
+    echo "7.4 Level 2: 配置GRUB密码..."
+    grub_password=$(openssl passwd -6 "grub_password")
+    echo "#!/bin/sh" > /etc/grub.d/40_custom
+    echo "set -e" >> /etc/grub.d/40_custom
+    echo "cat << 'EOF'" >> /etc/grub.d/40_custom
+    echo "set superusers=\"root\"" >> /etc/grub.d/40_custom
+    echo "password_pbkdf2 root $grub_password" >> /etc/grub.d/40_custom
+    echo "EOF" >> /etc/grub.d/40_custom
+    update-grub
 }
 
 # 主函数
